@@ -1,0 +1,17 @@
+create venv
+WIN py/python -m venv venv
+Mac python3 -m venv venv
+
+Activate venv
+WIN venv\Scripts\Activate
+Mac source venv/bin/Activate
+
+install flask
+pip install flask
+
+install SQLAlchemy
+pip install SQLAlchemy
+
+run app
+WIN py/python file_name.py
+Mac python3 file_name.py
