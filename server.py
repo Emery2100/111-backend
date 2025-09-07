@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify, request
 from sqlalchemy import (
     create_engine,
     Column,
@@ -39,12 +39,55 @@ class Expense(Base):
     date = Column(Date, nullable=False, default=date.today)
     category = Column(Enum("Food", "Education", "Entertainment"), nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"))       # Foreign key to users table
-    user = relationship("User", back_populates="expense")  # Expense.user.name
+    user = relationship("User", back_populates="expenses")  # Expense.user.name
 
 
 #Create tables
 Base.metadata.create_all(engine)
 
+#Health check route 
+@app.get("/api/health")
+def health_check():
+    return jsonify({"status": "OK"}), 200
+
+# User routes
+@app.post("/api/register")
+def register_user():
+    data = request.get_json()
+    username = data.get("username") #extract username
+    password = data.get("password") #extract password
+
+    #Validation
+    existing_user = session.query(User).filter_by(username=username).first()
+    if existing_user is not None:
+        return jsonify({"error": "Username already exists"}), 400
+
+    print(data)
+    print(username)
+    print(password)
+
+    new_user = User(username = username, password = password) # Create user instance
+    session.add(new_user) # Add to session
+    session.commit() # Commit to DB
+
+    return jsonify({"message": "User registered successfully"}), 201
+
+# Login
+@app.post("/api/login")
+def login():
+    data = request.get_json()
+    username = data.get("username")
+    password = data.get("password")
+
+    if not username or not password:
+        return jsonify({"error": "Username and password are required"}), 400
+    
+    user = session.query(User).filter_by(username=username, password=password).first()
+
+    if user and user.password == password:
+        return jsonify({"Succuss": "Login successful"}), 200
+    
+    return jsonify({"error": "Invalid username or password"}), 401
 # Ensures the server runs only when this script is executed directly
 if __name__ == "__main__":
     app.run(debug=True)
