@@ -1,3 +1,4 @@
+from unicodedata import category
 from flask import Flask, jsonify, request
 from sqlalchemy import (
     create_engine,
@@ -88,6 +89,138 @@ def login():
         return jsonify({"Succuss": "Login successful"}), 200
     
     return jsonify({"error": "Invalid username or password"}), 401
+
+#get user by id
+@app.get("/api/users/<user_id>")
+def get_user(user_id):
+    user = session.query(User).filter_by(id=user_id).first()
+    
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    user_data = {"id": user.id, "username": user.username}
+    return jsonify(user_data), 200
+
+#update a user
+@app.put("/api/users/<user_id>")
+def update_user(user_id):
+    data = request.get_json()
+    new_username = data.get("username")
+    new_password = data.get("password")
+
+    user = session.query(User).filter_by(id=user_id).first()
+
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    
+    if new_username:
+        user.username = new_username
+    if new_password:
+        user.password = new_password
+
+    session.commit()
+    return jsonify({"message": "User updated successfully"}), 200
+
+#delete a user
+@app.delete("/api/users/<user_id>")
+def delete_user(user_id):
+    user = session.query(User).filter_by(id=user_id).first()
+
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    session.delete(user)
+    session.commit()
+    return jsonify({"message": "User deleted successfully"}), 200
+
+# Expense routes
+@app.post("/api/expenses")
+def create_expense():
+    data = request.get_json()
+    title = data.get("title")
+    description = data.get("description")
+    amount = data.get("amount")
+    category = data.get("category")
+    user_id = data.get("user_id")
+
+#validate category
+    allowed_categories = ["Food", "Education", "Entertainment"] # set, not allowed duplicates
+
+    if category not in allowed_categories:
+        return jsonify({"error": "Invalid category"}), 400
+    
+    new_expense = Expense(
+        title=title,
+        description=description,
+        amount=amount,
+        category=category,
+        user_id=user_id
+    )
+    session.add(new_expense) #Add to session
+    session.commit() #Commit to DB
+
+    return jsonify({"message": "Expense created successfully"}), 201
+
+@app.get("/api/expenses/<expense_id>")
+def get_expense(expense_id):
+    expense = session.query(Expense).filter_by(id=expense_id).first()
+    if not expense:
+        return jsonify({"error": "Expense not found"}), 404
+
+    expense_data = {
+        "id": expense.id,
+        "title": expense.title,
+        "description": expense.description,
+        "amount": expense.amount,
+        "date": expense.date.isoformat(),
+        "category": expense.category,
+        "user_id": expense.user_id
+    }
+
+    return jsonify(expense_data), 200
+
+@app.put("/api/expenses/<expense_id>")
+def update_expense(expense_id):
+    data = request.get_json()
+    expense = session.query(Expense).filter_by(id=expense_id).first()
+
+    if not expense:
+        return jsonify({"error": "Expense not found"}), 404
+
+    title = data.get("title")
+    description = data.get("description")
+    amount = data.get("amount")
+    category = data.get("category")
+
+    if title:
+        expense.title = title
+    if description:
+        expense.description = description
+    if amount:
+        expense.amount = amount
+    if category:
+        allowed_categories = ["Food", "Education", "Entertainment"]
+        if category not in allowed_categories:
+            return jsonify({"error": "Invalid category"}), 400
+        expense.category = category
+
+    session.commit()
+    return jsonify({"message": "Expense updated successfully"}), 200
+
+@app.delete("/api/expenses/<expense_id>")
+def delete_expense(expense_id):
+    expense = session.query(Expense).filter_by(id=expense_id).first()
+
+    if not expense:
+        return jsonify({"error": "Expense not found"}), 404
+
+    session.delete(expense)
+    session.commit()
+    return jsonify({"message": "Expense deleted successfully"}), 200
+
 # Ensures the server runs only when this script is executed directly
 if __name__ == "__main__":
     app.run(debug=True)
+
+
+
