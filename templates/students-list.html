@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2> Student list</h2>
+
+<ul class="list-group">
+    {% for student in students %}
+        <li class="list-group-item">
+            <h3>{{ student.name }}</h3>
+            <p>Cohort: {{ student.cohort }}</p>
+            <p>Year: {{ student.year }}</p>
+            <p>Favorite Color: {{ student.favorite_color }}</p>
+        </li>
+    {% endfor %}
+</ul>
+{% endblock content %}

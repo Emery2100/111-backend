@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <h1>About Page</h1>
+
+    <ul class="list-group">
+        <li class="list-group-item">
+            <h3>{{ student.name }}</h3>
+            <p>Cohort: {{ student.cohort }}</p>
+            <p>Year: {{ student.year }}</p>
+        </li>
+
+</ul>
+
+{% endblock content %}

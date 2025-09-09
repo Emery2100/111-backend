@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Grade Page</h1>
+
+<ul class="list-group">
+    <li class="list-group-item">
+        <h3>{{ student.name }}</h3>
+        <p>Grade: {{ student.grade }}</p>
+    </li>
+</ul>
+
+{% endblock content %}

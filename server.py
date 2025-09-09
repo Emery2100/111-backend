@@ -1,5 +1,5 @@
 from unicodedata import category
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 from sqlalchemy import (
     create_engine,
     Column,
@@ -172,7 +172,6 @@ def get_expense(expense_id):
         "title": expense.title,
         "description": expense.description,
         "amount": expense.amount,
-        "date": expense.date.isoformat(),
         "category": expense.category,
         "user_id": expense.user_id
     }
@@ -217,6 +216,56 @@ def delete_expense(expense_id):
     session.delete(expense)
     session.commit()
     return jsonify({"message": "Expense deleted successfully"}), 200
+
+
+#Frontend route
+@app.get("/")
+@app.get("/home")
+@app.get("/index")
+def home():
+    return render_template("home.html") 
+
+
+@app.get("/about")
+def about():
+    student ={"name": "David", "cohort": 59, "year": 2025}
+    return render_template("about.html", student=student)
+
+
+@app.get("/students")
+def students_list():
+    students = [
+        {
+            "name": "Bruce",
+            "cohort": 59,
+            "year": 2025,
+            "favorite_color": "Black"
+        },
+        {
+            "name": "Clark",
+            "cohort": 58,
+            "year": 2024,
+            "favorite_color": "Blue"
+        },
+        {
+            "name": "Diana",
+            "cohort": 57,
+            "year": 2023,
+            "favorite_color": "Red"
+        },
+        {
+            "name": "Barry",
+            "cohort": 56,
+            "year": 2022,
+            "favorite_color": "Green"
+        }
+    ]
+    return render_template("students-list.html", students=students)
+
+@app.get("/grade")
+def grade_page():
+    student = {"name": "David", "grade": "A"}
+    return render_template("grade.html", student=student)
 
 # Ensures the server runs only when this script is executed directly
 if __name__ == "__main__":
